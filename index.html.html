@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureScan Pro | Visual Identity Audit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #0052FF;
+            --accent-glow: rgba(0, 82, 255, 0.3);
+            --bg: #060709;
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text: #FFFFFF;
+            --text-dim: #8E9AAF;
+            --danger: #EF4444;
+            --card-titanium: linear-gradient(135deg, #1a1c22 0%, #0a0b0d 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; outline: none; }
+
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, var(--bg) 60%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header { padding: 1.5rem 10%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: -1px; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: grid; place-items: center; font-size: 1rem; color: white; }
+
+        #viewport { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+
+        .btn-primary {
+            background: var(--accent); color: white; width: 100%; padding: 16px; border-radius: 12px; border: none;
+            font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px var(--accent-glow);
+            display: inline-block;
+        }
+        .btn-primary:hover { background: #0045D9; transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+
+        .hero { text-align: center; max-width: 800px; animation: fadeIn 0.8s ease forwards; }
+        .hero h1 { font-size: 3.5rem; font-weight: 700; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 40px; }
+
+        .audit-container { display: flex; flex-direction: column; align-items: center; gap: 40px; width: 100%; max-width: 450px; animation: fadeIn 0.5s ease forwards; }
+
+        /* Estilos de Tarjeta 3D */
+        .card-visual { width: 100%; height: 260px; perspective: 1000px; }
+        .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 18px; }
+        .card-visual.flipped .card-inner { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            width: 100%; height: 100%; background: var(--card-titanium); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 18px; position: absolute; top: 0; left: 0; backface-visibility: hidden; padding: 25px;
+            display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .card-back { transform: rotateY(180deg); padding: 0; }
+        
+        .magnetic-stripe { width: 100%; height: 50px; background: #000; margin-top: 25px; }
+        .cvv-display { background: white; color: black; width: 80%; height: 40px; margin: 10px auto; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-family: 'Share Tech Mono', monospace; font-weight: 700; font-size: 1.2rem; }
+        .card-chip { width: 50px; height: 40px; background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); border-radius: 8px; }
+        .card-number-display { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; letter-spacing: 2px; color: white; margin-top: 20px; }
+        .card-bottom-info { display: flex; justify-content: space-between; align-items: flex-end; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; }
+
+        /* Estilos de Formularios y Loaders */
+        .glass-form { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
+        input, select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; color: white; font-size: 1rem; }
+        input:focus, select:focus { border-color: var(--accent); }
+        select option { background: var(--bg); color: white; }
+
+        .loader-container { text-align: center; }
+        .spinner { width: 80px; height: 80px; border: 3px solid var(--glass-border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        
+        .alert-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 1rem; border-radius: 8px; font-size: 0.95rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">S</div>
+            SecureScan <span style="font-weight:300; color:var(--text-dim)">/ Servicios</span>
+        </div>
+    </header>
+
+    <main id="viewport">
+        <div class="hero" id="view-1">
+            <h1>Vive tus finanzas,<br>sin cargos ocultos.</h1>
+            <p>Nuestro sistema detecta suscripciones olvidadas en segundos.</p>
+            <button class="btn-primary" style="max-width: 300px" onclick="showInteractiveCard()">Comenzar Auditoría</button>
+        </div>
+    </main>
+
+    <script>
+        const viewport = document.getElementById('viewport');
+
+        function showInteractiveCard() {
+            viewport.innerHTML = `
+                <div class="audit-container">
+                    <div class="card-visual" id="card-visual">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <div style="display:flex; justify-content:space-between">
+                                    <div class="card-chip"></div>
+                                    <div style="font-size:0.8rem; opacity:0.5">SecureScan</div>
+                                </div>
+                                <div class="card-number-display" id="v-num">•••• •••• •••• ••••</div>
+                                <div class="card-bottom-info">
+                                    <div>
+                                        <div style="font-size:0.5rem; color:var(--text-dim)">TITULAR</div>
+                                        <div id="v-name">NOMBRE APELLIDO</div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div style="font-size:0.5rem; color:var(--text-dim)">EXP</div>
+                                        <div id="v-exp">MM/AA</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-back">
+                                <div class="magnetic-stripe"></div>
+                                <div class="cvv-display" id="v-cvv">***</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-form">
+                        <div class="form-group">
+                            <label>Número de Tarjeta</label>
+                            <input type="text" id="i-num" maxlength="19" placeholder="0000 0000 0000 0000">
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre del Titular</label>
+                            <input type="text" id="i-name" placeholder="NOMBRE COMPLETO" autocomplete="off">
+                        </div>
+                        <div style="display:flex; gap:10px">
+                            <div class="form-group" style="flex:1">
+                                <label>Exp</label>
+                                <input type="text" id="i-exp" maxlength="5" placeholder="MM/AA">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>CVV</label>
+                                <input type="password" id="i-cvv" maxlength="3" placeholder="***">
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="startLoading()">Analizar Cartera</button>
+                    </div>
+                </div>
+            `;
+            initCardLogic();
+        }
+
+        function initCardLogic() {
+            const cardVisual = document.getElementById('card-visual');
+            const iNum = document.getElementById('i-num');
+            const iName = document.getElementById('i-name');
+            const iExp = document.getElementById('i-exp');
+            const iCvv = document.getElementById('i-cvv');
+
+            iNum.addEventListener('input', (e) => {
+                // Corrección: Solo una barra invertida para la expresión regular \D (no dígitos)
+                let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+                let m = v.match(/.{1,4}/g);
+                e.target.value = m ? m.join(' ') : '';
+                document.getElementById('v-num').innerText = e.target.value || "•••• •••• •••• ••••";
+            });
+
+            iName.addEventListener('input', (e) => {
+                document.getElementById('v-name').innerText = e.target.value.toUpperCase() || "NOMBRE APELLIDO";
+            });
+
+            iExp.addEventListener('input', (e) => {
+                // Corrección aquí también
+                let v = e.target.value.replace(/\D/g, '');
+                if(v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+                e.target.value = v;
+                document.getElementById('v-exp').innerText = v || "MM/AA";
+            });
+
+            iCvv.addEventListener('input', (e) => {
+                document.getElementById('v-cvv').innerText = e.target.value || "***";
+            });
+
+            // Giro 3D
+            iCvv.addEventListener('focus', () => cardVisual.classList.add('flipped'));
+            iCvv.addEventListener('blur', () => cardVisual.classList.remove('flipped'));
+        }
+
+        function startLoading() {
+            const msgs = ["Sincronizando...", "Escaneando base de datos...", "Generando informe..."];
+            viewport.innerHTML = `
+                <div class="loader-container">
+                    <div class="spinner"></div>
+                    <h2 id="load-text" style="font-weight:300">${msgs[0]}</h2>
+                </div>
+            `;
+            
+            let i = 0;
+            const t = setInterval(() => { 
+                i++; 
+                if(i < msgs.length) document.getElementById('load-text').innerText = msgs[i]; 
+            }, 2000);
+            
+            setTimeout(() => { 
+                clearInterval(t); 
+                showFinalResults(); 
+            }, 6000);
+        }
+
+        function showFinalResults() {
+            viewport.innerHTML = `
+                <div class="audit-container" style="max-width: 500px;">
+                    <h2 style="font-size: 2rem; margin-bottom: 10px;">Auditoría Lista</h2>
+                    
+                    <div class="alert-box">
+                        ⚠️ RIESGO: Hemos detectado suscripciones fantasma activas en tu cuenta.
+                    </div>
+                    
+                    <div class="glass-form" style="max-width: 100%;">
+                        <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
+                            Para ver los detalles y cancelarlas inmediatamente, inicia sesión con Gmail en SecureScan.
+                        </p>
+                        
+                        <div class="form-group">
+                            <label>Tipo de Tarjeta</label>
+                            <select>
+                                <option>Selecciona tu tarjeta...</option>
+                                <option>Debito</option>
+                                <option>Credito</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Gmail</label>
+                            <input type="text" placeholder="Correo">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="password" placeholder="••••••••">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="alert('Conexión establecida. Datos enviados.')">Enviar Informe</button>
+                        
+                        <p style="font-size:0.7rem; color:var(--text-dim); margin-top:15px; text-align:center;">
+                            🔒 Conexión API segura de solo lectura (AES-256).
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
